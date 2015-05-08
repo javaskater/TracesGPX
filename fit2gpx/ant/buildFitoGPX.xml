@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!-- Pour utiliser les cibles update-war et deploy-scripts il est necessaire 
+	de mettre jsch.jar dans le classpath de Ant. Ant doit etre en version 1.6 
+	ou superieur. -->
+<project name="Compilation Vassiliev" default="package_project_jar"
+	basedir=".">
+	<property file="buildFitoGPX.properties" />
+	<property name="project.dir" value="${workspace}/fit2gpx-master" />
+	<property name="build.dir" value="${project.dir}/build" />
+	<property name="lib.dir" value="../lib" />
+	<property name="jarsdk.file" value="${lib.dir}/${modulesdk.id}.jar" />
+	<property name="jarprojet.file" value="${lib.dir}/${module.id}.jar" />
+	<property name="jarprojetwithsdk.file" value="${lib.dir}/${moduleavecsdk.id}.jar" />
+
+	<target name="mkdirs">
+		<mkdir dir="${lib.dir}" />
+		<mkdir dir="${build.dir}/classes" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dir}/classes" />
+		<delete dir="${lib.dir}" />
+	</target>
+
+	<path id="class.path.sdk">
+		<dirset dir="${build.dir}" />
+	</path>
+
+	<path id="class.path.projet">
+		<dirset dir="${build.dir}" />
+		<fileset dir="${lib.dir}" includes="**/*.jar" />
+	</path>
+
+	<target name="compile_sdk" depends="mkdirs">
+		<javac encoding="UTF-8" classpathref="class.path.sdk" debug="${debug}"
+			srcdir="${sources_sdk}" destdir="${build.dir}/classes" target="1.7"
+			excludes="**/*Test.java" />
+	</target>
+
+	<target name="package_sdk_jar" depends="compile_sdk">
+		<jar destfile="${jarsdk.file}" encoding="UTF-8">
+			<fileset dir="${build.dir}/classes" excludes="**/custom*,**/*Test*"
+				defaultexcludes="false" />
+		</jar>
+	</target>
+
+	<target name="compile_project" depends="package_sdk_jar">
+		<delete dir="${build.dir}/classes" />
+		<mkdir dir="${build.dir}/classes" />
+		<javac encoding="UTF-8" classpathref="class.path.projet" debug="${debug}"
+			srcdir="${project.dir}/src" destdir="${build.dir}/classes" target="1.7"
+			excludes="**/*Test.java" />
+	</target>
+
+	<target name="package_project_jar" depends="compile_project">
+		<jar destfile="${jarprojet.file}" encoding="UTF-8">
+			<fileset dir="${build.dir}/classes" excludes="**/custom*,**/*Test*"
+				defaultexcludes="false" />
+			<manifest>
+				<attribute name="Main-Class" value="${fittogpxclass}" />
+			</manifest>
+		</jar>
+	</target>
+
+	<!-- <target name="package_projet_avec_sdk" depends="package_project_jar">
+		<jar destfile="${jarprojetwithsdk.file}">
+			<zipgroupfileset dir="${build.dir}/lib" includes="*.jar" />
+			<manifest>
+				<attribute name="Main-Class" value="${fittogpxclass}" />
+			</manifest>
+		</jar>
+	</target> -->
+
+</project>
